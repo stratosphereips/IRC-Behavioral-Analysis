@@ -74,7 +74,8 @@ env.bak/
 venv.bak/
 
 # zeek logs
-zeek/*.log
+*.log
+zeek/logs
 
 # data folder
-data/
+.vscode/

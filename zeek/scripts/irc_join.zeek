@@ -1,6 +1,6 @@
 @load base/bif/plugins/Zeek_IRC.events.bif.zeek
 
-module Strato1;
+module Strato6;
 
 type irc_join_record: record {
     ts: time &log;
@@ -9,10 +9,10 @@ type irc_join_record: record {
     resp_h: addr &log;
     resp_p: port &log;
 
-    nick: string &log &optional; # L2 source (if Ethernet).
-    channel: string &log &optional; # L2 destination (if Ethernet).
-    password: string &log &optional;
-    usermode: string &log &optional;
+    nick: string &log; # L2 source (if Ethernet).
+    channel: string &log; # L2 destination (if Ethernet).
+    password: string &log;
+    usermode: string &log;
 };
 
 global irc_join_vec: vector of irc_join_record = vector();
@@ -22,12 +22,12 @@ export {
 }
 
 event zeek_init() {
-   Log::create_stream(Strato1::LOG, [$columns=irc_join_record, $path="irc_join"]);
+   Log::create_stream(Strato6::LOG, [$columns=irc_join_record, $path="irc_join"]);
 }
 
 event zeek_done() {
    for (i in irc_join_vec) {
-       Log::write( Strato1::LOG, irc_join_vec[i]);
+       Log::write( Strato6::LOG, irc_join_vec[i]);
    }
 }
 

@@ -1,4 +1,4 @@
-module Strato3;
+module Strato14;
 
 type irc_usermsg_record: record {
     ts: time &log;
@@ -20,12 +20,12 @@ export {
 }
 
 event zeek_init() {
-   Log::create_stream(Strato3::LOG, [$columns=irc_usermsg_record, $path="irc_usermsg"]);
+   Log::create_stream(Strato14::LOG, [$columns=irc_usermsg_record, $path="irc_usermsg"]);
 }
 
 event zeek_done() {
    for (i in irc_usermsg_vec) {
-       Log::write( Strato3::LOG, irc_usermsg_vec[i]);
+       Log::write( Strato14::LOG, irc_usermsg_vec[i]);
    }
 }
 
@@ -45,7 +45,8 @@ event zeek_done() {
 # set, the user mode 'i' will be set.  (See Section 3.1.5 "User
 # Modes").
 event irc_user_message(c: connection, is_orig: bool, user: string, host: string, server: string, real_name: string) {
-    local rec: irc_usermsg_record = irc_usermsg_record($ts=c$irc$ts, $orig_h=c$irc$id$orig_h, $orig_p=c$irc$id$orig_p, $resp_h = c$irc$id$resp_h, $resp_p=c$irc$id$resp_p, $user=user, $host=host, $server=server, $real_name=real_name);
-    irc_usermsg_vec += rec;
-    print "user msg";
+    if (c?$irc) {
+        local rec: irc_usermsg_record = irc_usermsg_record($ts=c$irc$ts, $orig_h=c$irc$id$orig_h, $orig_p=c$irc$id$orig_p, $resp_h = c$irc$id$resp_h, $resp_p=c$irc$id$resp_p, $user=user, $host=host, $server=server, $real_name=real_name);
+        irc_usermsg_vec += rec;
+    }
 }

@@ -1,4 +1,4 @@
-module Strato2;
+module Strato13;
 
 type irc_privmsg_record: record {
    ts: time &log;
@@ -20,12 +20,12 @@ export {
 }
 
 event zeek_init() {
-   Log::create_stream(Strato2::LOG, [$columns=irc_privmsg_record, $path="irc_privmsg"]);
+   Log::create_stream(Strato13::LOG, [$columns=irc_privmsg_record, $path="irc_privmsg"]);
 }
 
 event zeek_done() {
    for (i in irc_privmsg_vec) {
-       Log::write( Strato2::LOG, irc_privmsg_vec[i]);
+       Log::write( Strato13::LOG, irc_privmsg_vec[i]);
    }
 }
 
@@ -45,6 +45,8 @@ event zeek_done() {
 # '*' and '?'  characters.  This extension to the PRIVMSG command is
 # only available to operators.
 event irc_privmsg_message(c: connection, is_orig: bool, source: string, target: string, message: string) {
-   local rec: irc_privmsg_record = irc_privmsg_record($ts=c$irc$ts, $orig_h=c$irc$id$orig_h, $orig_p=c$irc$id$orig_p, $resp_h = c$irc$id$resp_h, $resp_p=c$irc$id$resp_p, $source=source, $target=target, $msg=message);
-   irc_privmsg_vec += rec;
+   if (c?$irc) {
+      local rec: irc_privmsg_record = irc_privmsg_record($ts=c$irc$ts, $orig_h=c$irc$id$orig_h, $orig_p=c$irc$id$orig_p, $resp_h = c$irc$id$resp_h, $resp_p=c$irc$id$resp_p, $source=source, $target=target, $msg=message);
+      irc_privmsg_vec += rec;
+   }
 }
