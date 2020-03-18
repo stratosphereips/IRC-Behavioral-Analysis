@@ -29,7 +29,8 @@ log_names_mal = ['03','04','34','39','42','51','56','62']
 log_names_benign = ['irc1']
 log_names = log_names_mal + log_names_benign
 
-project_dir = '/home/prenek/IRC-Behavioral-Analysis/' 
+# project_dir = '/Users/preneond/Documents/Work/Stratosphere/IRC-Research/IRC-Behavioral-Analysis/'
+project_dir = '/home/prenek/IRC-Behavioral-Analysis/python/out/irc1/lev_dist.log'
 log_dir = os.path.join(project_dir, 'zeek/logs/')
 out_dir = os.path.join(project_dir, 'python/out/')
 
@@ -70,9 +71,8 @@ logs_join = logs_join_mal + logs_join_benign
 logs_privmsg_mal = list(map(lambda x: load_logs(x),logs_fn_privmsg_mal))
 logs_privmsg_mal = [list(filter(lambda x: x['target'].startswith('#'), log)) for log in logs_privmsg_mal]
 
-logs_privmsg_benign = list(map(lambda x: load_logs(x),logs_fn_privmsg_mal))
+logs_privmsg_benign = list(map(lambda x: load_logs(x), logs_fn_privmsg_benign))
 logs_privmsg_benign = [list(filter(lambda x: x['target'].startswith('#'), log)) for log in logs_privmsg_benign]
-
 logs_privmsg = logs_privmsg_mal + logs_privmsg_benign
 
 
@@ -181,29 +181,26 @@ def compute_levenshtein_distance(logs_msg):
 
 from multiprocessing import Pool
 
-n = len(logs_privmsg)
+n = len(logs_privmsg_divided)
 
 print('ircprivmsg..')
 
 def compute_lev_dist_per_channel(l_k):
     print('channel: ', l_k)
     # compute levenshtein distance
-    logs_msg = [log['msg'] for log in logs[l_k]]
+    logs_msg = [log['msg'] for log in logs_div[l_k]]
     logs_lev_dist = compute_levenshtein_distance(logs_msg)
     # compute number of msg's senders per channel
-    sources = set([log['source'] for log in logs[l_k]])
-    # print('sources: ', len(sources))
+    sources = set([log['source'] for log in logs_div[l_k]])
+    print('sources: ', len(sources))
     return {'channel': l_k, 'num_sources': len(sources), 'lev_dist': logs_lev_dist}
 
 
-for ln, logs in zip(log_names_benign, logs_privmsg_divided):
+for ln, logs_div in zip(log_names_benign, logs_privmsg_divided):
     with Pool() as pool:
         fn = os.path.join(out_dir, ln, fileout_lev_dist)
-        print(fn)
-        print(logs.keys())
         # loop through channels            
-        data = pool.map(compute_lev_dist_per_channel,logs.keys())     
+        data = pool.map(compute_lev_dist_per_channel,logs_div.keys())     
         df_privmsg = pd.DataFrame(data)
         df_privmsg.to_csv(fn, sep=';', encoding='utf-8')
-        #print('lev_dist: ', logs_lev_dist)
 
