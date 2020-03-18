@@ -30,7 +30,7 @@ log_names_benign = ['irc1']
 log_names = log_names_mal + log_names_benign
 
 # project_dir = '/Users/preneond/Documents/Work/Stratosphere/IRC-Research/IRC-Behavioral-Analysis/'
-project_dir = '/home/prenek/IRC-Behavioral-Analysis/python/out/irc1/lev_dist.log'
+project_dir = '/home/prenek/IRC-Behavioral-Analysis/'
 log_dir = os.path.join(project_dir, 'zeek/logs/')
 out_dir = os.path.join(project_dir, 'python/out/')
 
@@ -185,7 +185,7 @@ n = len(logs_privmsg_divided)
 
 print('ircprivmsg..')
 
-def compute_lev_dist_per_channel(l_k):
+def compute_lev_dist_per_channel(fn, l_k):
     print('channel: ', l_k)
     # compute levenshtein distance
     logs_msg = [log['msg'] for log in logs_div[l_k]]
@@ -193,14 +193,23 @@ def compute_lev_dist_per_channel(l_k):
     # compute number of msg's senders per channel
     sources = set([log['source'] for log in logs_div[l_k]])
     print('sources: ', len(sources))
-    return {'channel': l_k, 'num_sources': len(sources), 'lev_dist': logs_lev_dist}
+
+    df = pd.DataFrame([{'channel': l_k, 'num_sources': len(sources), 'lev_dist': logs_lev_dist}])
+    
+
+    if not os.path.isfile(fn):
+        print('creating csv file....')
+        df.to_csv(fn, header='column_names')
+    else:
+        print('csv file exists.')
+        df.to_csv(fn, mode='a', header=False)
+
+    return df
 
 
 for ln, logs_div in zip(log_names_benign, logs_privmsg_divided):
     with Pool() as pool:
         fn = os.path.join(out_dir, ln, fileout_lev_dist)
         # loop through channels            
-        data = pool.map(compute_lev_dist_per_channel,logs_div.keys())     
-        df_privmsg = pd.DataFrame(data)
-        df_privmsg.to_csv(fn, sep=';', encoding='utf-8')
+        data = pool.starmap(compute_lev_dist_per_channel, itertools.product([fn], logs_div.keys()))     
 
