@@ -93,7 +93,7 @@ for logs in logs_join:
 
 
 logs_privmsg_divided = []
-for logs in logs_privmsg:
+for logs in logs_privmsg_benign:
     logs_per_channel = defaultdict(lambda: [])    
     for log in logs:
         logs_per_channel[log['target']].append(log)
@@ -141,22 +141,22 @@ def ircjoin_visualize(dates, dates_count):
 
 # In[68]:
 
-print('ircjoin...')
-for ln, l in zip(log_names, logs_join_divided):
-    fn = os.path.join(out_dir, ln, fileout_join_freq)
-    df_join = pd.DataFrame(columns=['channel','date','users_count'])
-    
-    for l_k in l.keys():
-        log = l[l_k]
-        d_arr, dc_arr = ircjoin_compute(log)
-        # ircjoin_visualize(d, dc)
-        for d, dc in zip(d_arr,dc_arr):
-            df_join = df_join.append({'channel': l_k, 'date': d, 'users_count': dc}, ignore_index=True)
-    
-    print(fn)
-    df_join.to_csv(fn, sep=';', encoding='utf-8')
-
-
+#print('ircjoin...')
+#for ln, l in zip(log_names, logs_join_divided):
+#    fn = os.path.join(out_dir, ln, fileout_join_freq)
+#    df_join = pd.DataFrame(columns=['channel','date','users_count'])
+#    
+#    for l_k in l.keys():
+#        log = l[l_k]
+#        d_arr, dc_arr = ircjoin_compute(log)
+#        # ircjoin_visualize(d, dc)
+#        for d, dc in zip(d_arr,dc_arr):
+#            df_join = df_join.append({'channel': l_k, 'date': d, 'users_count': dc}, ignore_index=True)
+#    
+#    print(fn)
+#    df_join.to_csv(fn, sep=';', encoding='utf-8')
+#
+#
 # ## Levenshtein Distance of Messages in Channel
 
 # In[69]:
@@ -194,10 +194,13 @@ def compute_lev_dist_per_channel(l_k):
     sources = set([log['source'] for log in logs[l_k]])
     # print('sources: ', len(sources))
     return {'channel': l_k, 'num_sources': len(sources), 'lev_dist': logs_lev_dist}
-    
-for ln, logs in zip(log_names, logs_privmsg_divided):
+
+
+for ln, logs in zip(log_names_benign, logs_privmsg_divided):
     with Pool() as pool:
         fn = os.path.join(out_dir, ln, fileout_lev_dist)
+        print(fn)
+        print(logs.keys())
         # loop through channels            
         data = pool.map(compute_lev_dist_per_channel,logs.keys())     
         df_privmsg = pd.DataFrame(data)
