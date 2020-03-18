@@ -16,7 +16,6 @@ from datetime import datetime, timedelta
 from zat.log_to_dataframe import LogToDataFrame
 from zat.bro_log_reader import BroLogReader
 from collections import defaultdict
-import numba
 
 
 # ## Loading Data
@@ -30,7 +29,7 @@ log_names_mal = ['03','04','34','39','42','51','56','62']
 log_names_benign = ['irc1']
 log_names = log_names_mal + log_names_benign
 
-project_dir = '/Users/preneond/Documents/Work/Stratosphere/IRC-Research/IRC-Behavioral-Analysis/' 
+project_dir = '/home/prenek/IRC-Behavioral-Analysis/' 
 log_dir = os.path.join(project_dir, 'zeek/logs/')
 out_dir = os.path.join(project_dir, 'python/out/')
 
@@ -47,8 +46,6 @@ logs_fn_privmsg_benign = [os.path.join(log_dir,l,'irc_privmsg.log') for l in log
 
 
 # In[47]:
-
-
 def load_logs(file):
     logs_arr = []
     if not os.path.isfile(file):
@@ -83,7 +80,6 @@ logs_privmsg = logs_privmsg_mal + logs_privmsg_benign
 
 # In[65]:
 
-
 from collections import defaultdict
 logs_join_divided = []
 for logs in logs_join:
@@ -97,7 +93,7 @@ for logs in logs_join:
 
 
 logs_privmsg_divided = []
-for logs in logs_privmsg_mal:
+for logs in logs_privmsg:
     logs_per_channel = defaultdict(lambda: [])    
     for log in logs:
         logs_per_channel[log['target']].append(log)
@@ -107,7 +103,6 @@ for logs in logs_privmsg_mal:
 # ## Number of Users in Channel per Day
 
 # In[67]:
-
 
 import json
 
@@ -146,7 +141,7 @@ def ircjoin_visualize(dates, dates_count):
 
 # In[68]:
 
-
+print('ircjoin...')
 for ln, l in zip(log_names, logs_join_divided):
     fn = os.path.join(out_dir, ln, fileout_join_freq)
     df_join = pd.DataFrame(columns=['channel','date','users_count'])
@@ -187,6 +182,8 @@ def compute_levenshtein_distance(logs_msg):
 from multiprocessing import Pool
 
 n = len(logs_privmsg)
+
+print('ircprivmsg..')
 
 def compute_lev_dist_per_channel(l_k):
     print('channel: ', l_k)
