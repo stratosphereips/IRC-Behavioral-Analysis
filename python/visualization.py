@@ -5,14 +5,23 @@
 
 # ### Imports
 
+# In[1]:
+
 
 import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from scipy import stats
-import ast
+
+
+# ## Loading Data
+
+# In[2]:
+
+
 import os
+
 
 log_names_mal = ['03','04','34','39','42','51','56','62']
 log_names_benign = ['irc1']
@@ -37,21 +46,32 @@ logs_fn_privmsg_mal = [os.path.join(out_dir,l,fn_lev_dist) for l in log_names_ma
 logs_fn_privmsg_benign = [os.path.join(out_dir,l, fn_lev_dist) for l in log_names_benign]
 
 
+
 # FIXME: read csv in chunks because the log is too big
 df_privmsg_benign = None
 chunksize = 10 ** 5
 # df_tmp = None
 for pcap, log in zip(log_names_benign, logs_fn_privmsg_benign):
     print(pcap)
-    df_privmsg_benign = pd.read_csv(log)
-    df_privmsg_benign = pd.concat(df_privmsg_benign, ignore_index=True)
-    df_privmsg_benign['pcap'] = pcap
-    df_privmsg_benign['malicious'] = 0
+    df_tmp = pd.read_csv(log, sep=';', encoding='utf-8', chunksize=chunksize)
+    df_tmp = pd.concat(df_tmp, ignore_index=True)
+    df_tmp['pcap'] = pcap
+    df_tmp['malicious'] = 0
+    df_privmsg_benign = pd.concat([df_privmsg_benign, df_tmp], ignore_index=True, sort=True)
     df_privmsg_benign.drop(["Unnamed: 0"], axis=1, inplace=True)
-    df_privmsg_benign['lev_dist'] =  df_privmsg_benign['lev_dist'].apply(lambda x: ast.literal_eval(x))
-    print(df_privmsg_benign.head())
 
-print(df_privmsg_benign.describe())
+df_privmsg_benign['lev_dist'] =  df_privmsg_mal['lev_dist'].apply(lambda x: ast.literal_eval(x))
+df_privmsg_benign.head()
+
+
+# In[ ]:
+
+
+df_privmsg_benign.describe()
+
+
+# In[ ]:
+
 
 fig = plt.figure()
 for i, df_el in df_privmsg_benign.iterrows():
@@ -59,7 +79,7 @@ for i, df_el in df_privmsg_benign.iterrows():
     plt.title('Benign PRIVMSG - Distribution plot of pairwise distance')
     plt.xlabel('Levenshtein distance')
     plt.ylabel('Distribution')
-legend_titles = list(map(lambda x: ": ".join(x), list(zip(df_privmsg_benign['pcap'], df_privmsg_benign['channel']))))   
+legend_titles = list(map(lambda x: ": ".join(x), list(zip(df_privmsg_mal['pcap'], df_privmsg_mal['channel']))))   
 fig.legend(legend_titles)
 plt.savefig(os.path.join(plot_dir,'benign_privmsg_distplot_all.pdf'), format='pdf')
 
