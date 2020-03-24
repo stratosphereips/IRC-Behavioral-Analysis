@@ -5,3 +5,5 @@ zat
 matplotlib
 python-Levenshtein
 seaborn
+textblob
+pycountry
